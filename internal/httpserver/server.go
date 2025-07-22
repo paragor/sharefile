@@ -113,27 +113,7 @@ func NewHttpServer(
 				handler.ServeHTTP(writer, request)
 			})
 		},
-		func(handler http.Handler) http.Handler {
-			return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-				ctx := request.Context()
-				logger := log.FromContext(ctx).
-					With(slog.String("request_id", request.Header.Get("x-request-id")))
-				ctx = log.PutIntoContext(ctx, logger)
-				request = request.WithContext(ctx)
-				handler.ServeHTTP(writer, request)
-			})
-		},
-		func(handler http.Handler) http.Handler {
-			return handlers.CustomLoggingHandler(io.Discard, handler, func(_ io.Writer, params handlers.LogFormatterParams) {
-				log.FromContext(params.Request.Context()).
-					With(slog.Int("status_code", params.StatusCode)).
-					With(slog.Int("size", params.Size)).
-					With(slog.Duration("duration", time.Now().Sub(params.TimeStamp))).
-					With(slog.String("request_uri", params.Request.RequestURI)).
-					With(slog.String("remote_addr", params.Request.RemoteAddr)).
-					Info("request processed")
-			})
-		},
+		logsMiddleware,
 		handlers.CompressHandler,
 	)
 	server.mux.Name("static").PathPrefix("/static/").Handler(
@@ -148,17 +128,20 @@ func NewHttpServer(
 			),
 		),
 	)
-	server.mux.Path("/login").HandlerFunc(server.htmxPageLogin)
-	server.mux.Path("/oidc/callback").Handler(server.oidc.AuthCallbackHandler())
-	server.mux.Path("/oidc/login").Handler(server.oidc.AuthLoginHandler())
 
 	if diagnosticEndpointsEnabled {
-		server.mux.Path("/metrics").Handler(promhttp.Handler())
-		server.mux.Path("/healthz").HandlerFunc(server.apiPing)
-		server.mux.Path("/readyz").HandlerFunc(server.apiPing)
+		diags := server.mux.Name("diags").Subrouter()
+		diags.Path("/metrics").Handler(promhttp.Handler())
+		diags.Path("/healthz").HandlerFunc(server.apiPing)
+		diags.Path("/readyz").HandlerFunc(server.apiPing)
 	}
 
-	server.mux.PathPrefix("/rss/").Methods(http.MethodGet).HandlerFunc(server.generateRSS)
+	pub := server.mux.Name("public").Subrouter()
+	pub.PathPrefix("/rss/").Methods(http.MethodGet).HandlerFunc(server.generateRSS)
+	pub.Path("/login").HandlerFunc(server.htmxPageLogin)
+	pub.Path("/oidc/callback").Handler(server.oidc.AuthCallbackHandler())
+	pub.Path("/oidc/login").Handler(server.oidc.AuthLoginHandler())
+
 	htmx := server.mux.Name("htmx").Subrouter()
 	htmx.Use(server.AuthMiddleware())
 	htmx.Path("/").HandlerFunc(server.htmxPageMain)
@@ -171,4 +154,17 @@ func NewHttpServer(
 	api.Path("/link").Methods(http.MethodGet).HandlerFunc(server.apiGenerateDownloadFileLink)
 
 	return server, nil
+}
+
+func logsMiddleware(handler http.Handler) http.Handler {
+	return handlers.CustomLoggingHandler(io.Discard, handler, func(_ io.Writer, params handlers.LogFormatterParams) {
+		log.FromContext(params.Request.Context()).
+			With(slog.Int("status_code", params.StatusCode)).
+			With(slog.Int("size", params.Size)).
+			With(slog.Duration("duration", time.Now().Sub(params.TimeStamp))).
+			With(slog.String("request_uri", params.Request.RequestURI)).
+			With(slog.String("remote_addr", params.Request.RemoteAddr)).
+			With(slog.String("request_id", params.Request.Header.Get("X-Request-ID"))).
+			Info("request processed")
+	})
 }

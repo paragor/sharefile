@@ -275,14 +275,13 @@ func (s *httpServer) AuthMiddleware() mux.MiddlewareFunc {
 
 			ctx := request.Context()
 			ctx = context.WithValue(ctx, authContextKeyValue, auth)
-			ctx = log.PutIntoContext(
-				ctx,
-				log.FromContext(ctx).With(
-					slog.String("user", auth.Email),
-					slog.String("impersonate_as_user", auth.ImpersonateEmail),
-					slog.Bool("is_admin", auth.IsAdmin),
-				),
+			logger := log.FromContext(ctx).With(
+				slog.String("user", auth.Email),
+				slog.String("impersonate_as_user", auth.ImpersonateEmail),
+				slog.Bool("is_admin", auth.IsAdmin),
 			)
+			logger.Debug("auth middleware is successfully passed")
+			ctx = log.PutIntoContext(ctx, logger)
 			handler.ServeHTTP(writer, request.WithContext(ctx))
 		})
 	}
