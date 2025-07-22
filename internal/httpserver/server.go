@@ -129,6 +129,8 @@ func NewHttpServer(
 					With(slog.Int("status_code", params.StatusCode)).
 					With(slog.Int("size", params.Size)).
 					With(slog.Duration("duration", time.Now().Sub(params.TimeStamp))).
+					With(slog.String("request_uri", params.Request.RequestURI)).
+					With(slog.String("remote_addr", params.Request.RemoteAddr)).
 					Info("request processed")
 			})
 		},
