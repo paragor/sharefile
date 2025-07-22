@@ -152,6 +152,7 @@ func NewHttpServer(
 	api.Path("/upload").Methods(http.MethodPost).HandlerFunc(server.apiUploadFile)
 	api.Path("/delete").Methods(http.MethodDelete).HandlerFunc(server.apiDelteFile)
 	api.Path("/link").Methods(http.MethodGet).HandlerFunc(server.apiGenerateDownloadFileLink)
+	api.Path("/logout").Methods(http.MethodGet).HandlerFunc(server.apiLogout)
 
 	return server, nil
 }

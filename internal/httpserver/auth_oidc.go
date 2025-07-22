@@ -251,6 +251,25 @@ func (oc *authOidcContext) AuthLoginHandler() http.Handler {
 	return rp.AuthURLHandler(func() string { return uuid.New().String() }, oc.provider)
 }
 
+func (s *httpServer) apiLogout(w http.ResponseWriter, r *http.Request) {
+	for _, cookie := range []string{
+		s.oidc.idTokenCookieName,
+		s.oidc.refreshTokenCookieName,
+		impersonateCookieName,
+	} {
+		http.SetCookie(w, &http.Cookie{
+			Name:     cookie,
+			Path:     "/",
+			MaxAge:   -1,
+			Secure:   true,
+			HttpOnly: true,
+		})
+	}
+	w.Header().Set("HX-Redirect", "/login")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("ok"))
+}
+
 func (s *httpServer) AuthMiddleware() mux.MiddlewareFunc {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {

@@ -21,6 +21,9 @@
                 <a class="btn" href="/whoami">
                     {{ .Email }} {{ if .ImpersonateEmail }}(as {{.ImpersonateEmail}}){{ end }}
                 </a>
+                <a class="btn btn-sm btn-info" href="/api/logout">
+                    Logout
+                </a>
                 {{ end }}
             </div>
         </div>
