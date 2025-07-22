@@ -1,0 +1,53 @@
+{{define "component/network_error"}}
+<style>
+    #{{.}} {
+        color: red;
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #ffdddd;
+        text-align: center;
+        padding: 10px;
+        z-index: 1000;
+    }
+</style>
+<div id="{{ . }}" style="color: red; display: none;"></div>
+<script type="text/javascript">
+    var hideTimeout;
+
+    function showError(message) {
+        var errorDiv = document.getElementById('{{ . }}');
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = message;
+
+        // Clear any existing timeout to prevent multiple hide actions
+        clearTimeout(hideTimeout);
+
+        // Set a new timeout to hide the error message after 15 seconds
+        hideTimeout = setTimeout(function() {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    // Hide error message when a new request is sent
+    document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        var errorDiv = document.getElementById('{{ . }}');
+        errorDiv.style.display = 'none';
+
+        // Clear any existing timeout to ensure it doesn't hide after a new request
+        clearTimeout(hideTimeout);
+    });
+
+    document.body.addEventListener('htmx:sendError', function(evt) {
+        showError('Network error');
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if (!evt.detail.successful && (evt.detail.xhr.status === 0 || evt.detail.xhr.status >= 600)) {
+            showError('Request error');
+        }
+    });
+</script>
+{{end}}

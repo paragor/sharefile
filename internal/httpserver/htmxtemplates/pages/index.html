@@ -1,0 +1,29 @@
+{{define "page/index"}}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <title>Share File</title>
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+        <link rel="apple-touch-icon" href="/static/apple-touch-icon.png"/>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+        <link rel="stylesheet" href="/static/main.css">
+        <link rel="stylesheet" href="/static/bootstrap.min.css">
+    </head>
+    <body>
+    <script src="/static/htmx.js"></script>
+    <script src="/static/htmx-response-targets.js"></script>
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <div id="main-page">
+        {{ template "component/navbar" . }}
+        {{ template "component/network_error" "generic-network-error" }}
+
+        <div class="container">
+            {{ .ChildComponent }}
+        </div>
+        {{ template "component/scroll_up" }}
+    </div>
+    </body>
+    </html>
+{{end}}

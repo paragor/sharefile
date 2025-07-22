@@ -1,0 +1,26 @@
+listen: 127.0.0.1:8080
+server_public_url: http://127.0.0.1:8080
+diagnostic_endpoints_enabled: false
+rss_expiration_link_hours: 1
+oidc:
+  client_id: ""
+  client_secret: ""
+  issuer_url: ""
+  cookie_key: kiel4teof4Eoziheigiesh7ooquiepho
+  scopes:
+  - openid
+  - email
+  - profile
+  - offline_access
+  allowed_group: ""
+  admin_group: ""
+storage:
+  type: s3
+  s3:
+    bucket: ""
+    endpoint: ""
+    region: ""
+    access_key_id: ""
+    secret_access_key: ""
+    path_style: false
+    disable_ssl: false

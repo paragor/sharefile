@@ -1,0 +1,5 @@
+{{define "component/list_files"}}
+        <div class="row">
+            {{range .Files}}{{ template "component/file_row" .}}{{end}}
+        </div>
+{{end}}

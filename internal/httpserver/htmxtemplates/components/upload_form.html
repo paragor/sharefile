@@ -1,0 +1,32 @@
+{{define "component/upload_form"}}
+    <div id="upload-form-div" class="row m-4" hx-ext="response-targets">
+    <h3 class='col-12'> File upload: </h3>
+    <div id='error-upload-form' class='col-12' style="background: palevioletred"></div>
+    <form id='upload-form' 
+          class='col-12'
+          hx-encoding='multipart/form-data' 
+          hx-post='/api/upload'
+          hx-target-error="#error-upload-form"
+    >
+        <progress id='progress' 
+                  class="progress-bar"
+                  value='0'
+                  max='100'
+                  style="width: 100%"
+        ></progress>
+        <div class="form-group">
+            <input type='file' class="form-control" name='file' required>
+            <div class='progress form-control'>
+            </div>
+            <button class='btn btn-sm btn-success'>
+                Upload
+            </button>
+        </div>
+    </form>
+    <script>
+        htmx.on('#upload-form', 'htmx:xhr:progress', function(evt) {
+          htmx.find('#progress').setAttribute('value', evt.detail.loaded/evt.detail.total * 100)
+        });
+    </script>
+    </div>
+{{end}}

@@ -1,0 +1,28 @@
+{{define "component/navbar"}}
+    <nav class="navbar navbar-expand bg-body-tertiary mb-3">
+        <div class="container">
+            <a class="navbar-brand" href="/">Share File</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse me-auto" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">List</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex m-auto">
+                {{ if .RssLink }}
+                <button class="btn btn-sm btn-success" onclick="navigator.clipboard.writeText('{{ .RssLink }}')">Copy RSS Link</button>
+                {{ end }}
+                {{ if .AuthCompleted }}
+                <a class="btn" href="/whoami">
+                    {{ .Email }} {{ if .ImpersonateEmail }}(as {{.ImpersonateEmail}}){{ end }}
+                </a>
+                {{ end }}
+            </div>
+        </div>
+    </nav>
+{{end}}
