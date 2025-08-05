@@ -2,14 +2,21 @@ package httpserver
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strings"
-	"time"
-
-	"github.com/gorilla/feeds"
 )
 
-func (s *httpServer) generateRSS(w http.ResponseWriter, r *http.Request) {
+type sharePageContext struct {
+	Files []sharePageFile
+}
+type sharePageFile struct {
+	Path      string
+	Link      string
+	SizeHuman string
+}
+
+func (s *httpServer) htmxPageShare(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 2 {
 		httpError(
@@ -45,36 +52,27 @@ func (s *httpServer) generateRSS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	feed := &feeds.Feed{
-		Title:       "Share File Of " + email,
-		Description: "Shared files",
-		Author:      &feeds.Author{Name: email, Email: email},
-		Created:     time.Now(),
-	}
-
+	sharePage := &sharePageContext{}
 	for _, fileMeta := range listing {
 		link, err := userStorage.GenerateDownloadLink(r.Context(), fileMeta.Path, s.rssExpirationLink)
 		if err != nil {
 			httpError(r.Context(), w, "unable to generate links for files", err, http.StatusInternalServerError)
 			return
 		}
-		feed.Add(&feeds.Item{
-			Title: fileMeta.Path,
-			Link: &feeds.Link{
-				Href: link,
-			},
-			Updated: fileMeta.LastModifiedAt,
-			Created: fileMeta.LastModifiedAt,
+		sharePage.Files = append(sharePage.Files, sharePageFile{
+			Path:      fileMeta.Path,
+			Link:      link,
+			SizeHuman: bytesConvert(fileMeta.Size),
 		})
 	}
 
-	rss, err := feed.ToRss()
+	sharePageHtml, err := renderHtmx("component/share", sharePage)
 	if err != nil {
-		httpError(r.Context(), w, "unable to build rss feed", err, http.StatusInternalServerError)
+		httpError(r.Context(), w, "error on render upload form", err, http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/rss+xml")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(rss))
+	renderContext := s.htmxPrepareMainContext(r)
+	renderContext.ChildComponent = template.HTML(sharePageHtml.String())
+	writeHtmx(w, r, "page/index", renderContext, 200)
 }

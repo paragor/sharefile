@@ -19,6 +19,11 @@
                             <button class="dropdown-item" onclick="navigator.clipboard.writeText('{{ .RssLink }}')">Copy RSS Link</button>
                         </li>
                         {{ end }}
+                        {{ if .ShareLink }}
+                        <li>
+                            <button class="dropdown-item" onclick="navigator.clipboard.writeText('{{ .ShareLink }}')">Copy Share Link</button>
+                        </li>
+                        {{ end }}
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" href="/whoami">

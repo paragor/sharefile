@@ -138,6 +138,7 @@ func NewHttpServer(
 
 	pub := server.mux.Name("public").Subrouter()
 	pub.PathPrefix("/rss/").Methods(http.MethodGet).HandlerFunc(server.generateRSS)
+	pub.PathPrefix("/share/").Methods(http.MethodGet).HandlerFunc(server.htmxPageShare)
 	pub.Path("/login").HandlerFunc(server.htmxPageLogin)
 	pub.Path("/oidc/callback").Handler(server.oidc.AuthCallbackHandler())
 	pub.Path("/oidc/login").Handler(server.oidc.AuthLoginHandler())

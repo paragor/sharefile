@@ -1,0 +1,14 @@
+{{define "component/share"}}
+        <div class="row">
+            <h2 class="col-12">Files list</h2>
+            <div class="col-12">
+                <ul>
+                {{range .Files}}
+                    <li>
+                        <a href="{{ .Link }}" target="_blank">{{ .Path }} ({{ .SizeHuman }})</a>
+                    </li>
+                {{end}}
+                </ul>
+            </div>
+        </div>
+{{end}}

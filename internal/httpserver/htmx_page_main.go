@@ -29,6 +29,7 @@ type mainContext struct {
 	Email            string
 	ImpersonateEmail string
 	RssLink          string
+	ShareLink        string
 
 	ChildComponent any
 }
@@ -62,6 +63,12 @@ func (s *httpServer) htmxPageMain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	meta, err := userStorage.GetMetadata(r.Context())
+	if err != nil {
+		httpError(r.Context(), w, "unable to fetch metadata", err, http.StatusInternalServerError)
+		return
+	}
+
 	listFilesHtml, err := s.htmxComponentListFiles(r.Context(), userStorage)
 	if err != nil {
 		httpError(r.Context(), w, "error on render list component", err, http.StatusInternalServerError)
@@ -77,11 +84,8 @@ func (s *httpServer) htmxPageMain(w http.ResponseWriter, r *http.Request) {
 	renderContext := s.htmxPrepareMainContext(r)
 	renderContext.ChildComponent = template.HTML(uploadForm.String()) + listFilesHtml
 
-	rssLink, err := s.getRssLink(r.Context(), userStorage)
-	if err != nil {
-		httpError(r.Context(), w, "error on generate rss link", err, http.StatusInternalServerError)
-	}
-	renderContext.RssLink = rssLink
+	renderContext.RssLink = s.getRssLink(meta)
+	renderContext.ShareLink = s.getShareLink(meta)
 
 	writeHtmx(w, r, "page/index", renderContext, 200)
 }
@@ -148,12 +152,12 @@ func (s *httpServer) htmxComponentListFiles(ctx context.Context, userScopedStora
 	}
 	return template.HTML(result.String()), nil
 }
-func (s *httpServer) getRssLink(ctx context.Context, userScopedStorage storage.UserScopedStorage) (string, error) {
-	meta, err := userScopedStorage.GetMetadata(ctx)
-	if err != nil {
-		return "", fmt.Errorf("fail to get rss meta: %w", err)
-	}
-	return fmt.Sprintf("%s/rss/%s/%s", s.serverPublicUrl, meta.Email, meta.RssSecret), nil
+
+func (s *httpServer) getRssLink(meta *storage.Metadata) string {
+	return fmt.Sprintf("%s/rss/%s/%s", s.serverPublicUrl, meta.Email, meta.Secret)
+}
+func (s *httpServer) getShareLink(meta *storage.Metadata) string {
+	return fmt.Sprintf("%s/share/%s/%s", s.serverPublicUrl, meta.Email, meta.Secret)
 }
 
 func bytesConvert(bytes int) string {

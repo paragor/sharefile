@@ -1,4 +1,4 @@
-{{define "component/file_row"}}
+{{define "component/list_files_row"}}
     <div id="file-{{ .Id }}" class="col-12 col-lg-6 col-xl-3 mb-4" hx-ext="response-targets" >
         <div class="card h-100">
             <div class="card-body">
@@ -22,15 +22,6 @@
                         hx-confirm="Are you sure you wish to delete your file?"
                 > ❌
                 </button>
-
-<!--                 <button class="btn btn-info btn-sm" -->
-<!--                         hx-put="/htmx/api/save_status?uuid={{ .Path }}&status=completed" -->
-<!--                         hx-trigger="click" -->
-<!--                         hx-target="#file-{{ .Id }}" -->
-<!--                         hx-target-error="#error-{{ .Id }}" -->
-<!--                 > -->
-<!--                     ✅ -->
-<!--                 </button> -->
             </div>
         </div>
     </div>

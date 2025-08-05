@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/paragor/sharefile/internal/log"
 )
 
 type s3StorageFactory struct {
@@ -53,10 +54,28 @@ func (sf *s3StorageFactory) createMetadataIfNotExists(ctx context.Context, email
 		if meta.Email != email {
 			return fmt.Errorf("invalid metadata: expect %s email, got %s", email, meta.Email)
 		}
+
+		if meta.MigrationRequired() {
+			log.FromContext(ctx).Info("migrate metadata")
+			meta.Migrate()
+			data, err := meta.marshal()
+			if err != nil {
+				return fmt.Errorf("unexpected marshal error during migration: %w", err)
+			}
+			if _, err := sf.client.PutObjectWithContext(ctx, &s3.PutObjectInput{
+				Key:         aws.String(key),
+				Body:        bytes.NewReader(data),
+				Bucket:      aws.String(sf.bucket),
+				ContentType: aws.String("application/json"),
+			}); err != nil {
+				return fmt.Errorf("cant upload migrated metadata: %w", err)
+			}
+		}
 		return nil
 	}
 
 	if awsErr, ok := err.(awserr.Error); ok && autoCreate && awsErr.Code() == s3.ErrCodeNoSuchKey {
+		log.FromContext(ctx).Info("create new metadata")
 		data, err := newMetadata(email).marshal()
 		if err != nil {
 			return fmt.Errorf("unexpected marshal error: %w", err)
