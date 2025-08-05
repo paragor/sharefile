@@ -26,7 +26,7 @@ func (s *s3SUserSCopedStorage) getFilePath(objPath string) string {
 
 func (s *s3SUserSCopedStorage) GetMetadata(ctx context.Context) (*Metadata, error) {
 	obj, err := s.client.GetObjectWithContext(ctx, &s3.GetObjectInput{
-		Key:    aws.String(s.email + "/" + metadataFile),
+		Key:    aws.String(getS3MetadataPath(s.email)),
 		Bucket: aws.String(s.bucket),
 	})
 

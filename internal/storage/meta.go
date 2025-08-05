@@ -13,10 +13,12 @@ const currentVersion = 2
 const metadataFile = "metadata.json"
 
 type Metadata struct {
-	Version   int    `json:"version"`
-	Email     string `json:"email"`
+	Version int    `json:"version"`
+	Email   string `json:"email"`
+	Secret  string `json:"secret"`
+
+	// removed since v2
 	RssSecret string `json:"rss_secret,omitempty"`
-	Secret    string `json:"secret"`
 }
 
 func (m *Metadata) MigrationRequired() bool {

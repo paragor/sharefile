@@ -163,7 +163,7 @@ func logsMiddleware(handler http.Handler) http.Handler {
 		log.FromContext(params.Request.Context()).
 			With(slog.Int("status_code", params.StatusCode)).
 			With(slog.Int("size", params.Size)).
-			With(slog.Duration("duration", time.Now().Sub(params.TimeStamp))).
+			With(slog.Float64("duration_seconds", time.Now().Sub(params.TimeStamp).Seconds())).
 			With(slog.String("request_uri", params.Request.RequestURI)).
 			With(slog.String("remote_addr", params.Request.RemoteAddr)).
 			With(slog.String("request_id", params.Request.Header.Get("X-Request-ID"))).
