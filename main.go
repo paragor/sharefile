@@ -35,7 +35,6 @@ type Config struct {
 		CookieKey    string   `yaml:"cookie_key"`
 		Scopes       []string `yaml:"scopes"`
 		AllowedGroup string   `yaml:"allowed_group"`
-		AdminGroup   string   `yaml:"admin_group"`
 	} `yaml:"oidc"`
 
 	Storage struct {
@@ -104,7 +103,6 @@ func main() {
 		CookieKey:    cfg.Oidc.CookieKey,
 		Scopes:       cfg.Oidc.Scopes,
 		AllowedGroup: cfg.Oidc.AllowedGroup,
-		AdminGroup:   cfg.Oidc.AdminGroup,
 	}
 	if err := auth.Validate(); err != nil {
 		logger.With(log.Error(err)).Error("invalid oauth config")

@@ -56,7 +56,7 @@ func (sf *s3StorageFactory) saveMetadata(ctx context.Context, meta *Metadata) er
 		Bucket:      aws.String(sf.bucket),
 		ContentType: aws.String("application/json"),
 	}); err != nil {
-		return fmt.Errorf("cant upload migrated metadata: %w", err)
+		return fmt.Errorf("cant upload metadata: %w", err)
 	}
 	return nil
 }

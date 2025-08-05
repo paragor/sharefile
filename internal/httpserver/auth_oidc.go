@@ -16,8 +16,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const impersonateCookieName = "impersonate-email"
-
 type AuthOidcConfig struct {
 	ClientId     string
 	ClientSecret string
@@ -25,7 +23,6 @@ type AuthOidcConfig struct {
 	CookieKey    string
 	Scopes       []string
 	AllowedGroup string
-	AdminGroup   string
 }
 
 func (c *AuthOidcConfig) Validate() error {
@@ -158,30 +155,6 @@ func (oc *authOidcContext) isAccessAllowed(token *oidc.IDTokenClaims) bool {
 	return false
 }
 
-func (oc *authOidcContext) isAdmin(token *oidc.IDTokenClaims) bool {
-	if !oc.isAccessAllowed(token) {
-		return false
-	}
-
-	groups, err := oc.extractGroups(token)
-	if err != nil {
-		rawToken, _ := token.MarshalJSON()
-		log.FromContext(context.Background()).
-			With(slog.String("id_token", string(rawToken))).
-			With(log.Error(err)).
-			Error("cant check admin access")
-		return false
-	}
-
-	for _, group := range groups {
-		if group == oc.cfg.AdminGroup {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (oc *authOidcContext) extractGroups(token *oidc.IDTokenClaims) ([]string, error) {
 	groups := token.Claims["groups"]
 	if groups == nil {
@@ -255,7 +228,6 @@ func (s *httpServer) apiLogout(w http.ResponseWriter, r *http.Request) {
 	for _, cookie := range []string{
 		s.oidc.idTokenCookieName,
 		s.oidc.refreshTokenCookieName,
-		impersonateCookieName,
 	} {
 		http.SetCookie(w, &http.Cookie{
 			Name:     cookie,
@@ -280,24 +252,14 @@ func (s *httpServer) AuthMiddleware() mux.MiddlewareFunc {
 			}
 			auth := &authContext{
 				Email:    claim.Email,
-				IsAdmin:  s.oidc.isAdmin(claim),
 				RawToken: claim,
 				ExpireAt: claim.GetExpiration(),
-			}
-			if auth.IsAdmin {
-				for _, cookie := range request.Cookies() {
-					if cookie.Name == impersonateCookieName {
-						auth.ImpersonateEmail = cookie.Value
-					}
-				}
 			}
 
 			ctx := request.Context()
 			ctx = context.WithValue(ctx, authContextKeyValue, auth)
 			logger := log.FromContext(ctx).With(
 				slog.String("user", auth.Email),
-				slog.String("impersonate_as_user", auth.ImpersonateEmail),
-				slog.Bool("is_admin", auth.IsAdmin),
 			)
 			logger.Debug("auth middleware is successfully passed")
 			ctx = log.PutIntoContext(ctx, logger)
@@ -307,10 +269,8 @@ func (s *httpServer) AuthMiddleware() mux.MiddlewareFunc {
 }
 
 type authContext struct {
-	Email            string
-	IsAdmin          bool
-	ImpersonateEmail string
-	ExpireAt         time.Time
+	Email    string
+	ExpireAt time.Time
 
 	RawToken any
 }
@@ -333,9 +293,6 @@ func (s *httpServer) extractEmail(request *http.Request) (string, error) {
 	auth, err := s.extractAuthContext(request)
 	if err != nil {
 		return "", err
-	}
-	if auth.IsAdmin && auth.ImpersonateEmail != "" {
-		return auth.ImpersonateEmail, nil
 	}
 	return auth.Email, nil
 }

@@ -24,11 +24,10 @@ type listContextFile struct {
 }
 
 type mainContext struct {
-	AuthCompleted    bool
-	Email            string
-	ImpersonateEmail string
-	RssLink          string
-	ShareLink        string
+	AuthCompleted bool
+	Email         string
+	RssLink       string
+	ShareLink     string
 
 	ChildComponent any
 }
@@ -37,16 +36,14 @@ func (s *httpServer) htmxPrepareMainContext(r *http.Request) *mainContext {
 	auth, err := s.extractAuthContext(r)
 	if err != nil {
 		return &mainContext{
-			AuthCompleted:    false,
-			Email:            "",
-			ImpersonateEmail: "",
+			AuthCompleted: false,
+			Email:         "",
 		}
 	}
 	return &mainContext{
-		AuthCompleted:    true,
-		Email:            auth.Email,
-		ImpersonateEmail: auth.ImpersonateEmail,
-		ChildComponent:   nil,
+		AuthCompleted:  true,
+		Email:          auth.Email,
+		ChildComponent: nil,
 	}
 }
 func (s *httpServer) htmxPageMain(w http.ResponseWriter, r *http.Request) {

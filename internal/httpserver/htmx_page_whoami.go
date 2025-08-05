@@ -8,11 +8,9 @@ import (
 )
 
 type whoAmIContext struct {
-	Expiration       time.Duration
-	TokenPrettyJson  string
-	Email            string
-	IsAdmin          bool
-	ImpersonateEmail string
+	Expiration      time.Duration
+	TokenPrettyJson string
+	Email           string
 }
 
 func (s *httpServer) htmxPageWhoami(w http.ResponseWriter, r *http.Request) {
@@ -29,11 +27,9 @@ func (s *httpServer) htmxPageWhoami(w http.ResponseWriter, r *http.Request) {
 	}
 
 	whoamiHtmx, err := renderHtmx("component/whoami", whoAmIContext{
-		Expiration:       auth.ExpireAt.Sub(time.Now()),
-		TokenPrettyJson:  string(token),
-		Email:            auth.Email,
-		IsAdmin:          auth.IsAdmin,
-		ImpersonateEmail: auth.ImpersonateEmail,
+		Expiration:      auth.ExpireAt.Sub(time.Now()),
+		TokenPrettyJson: string(token),
+		Email:           auth.Email,
 	})
 	if err != nil {
 		httpError(r.Context(), w, "error on render whoami component", err, http.StatusInternalServerError)

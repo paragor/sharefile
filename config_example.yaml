@@ -13,7 +13,6 @@ oidc:
   - profile
   - offline_access
   allowed_group: ""
-  admin_group: ""
 storage:
   type: s3
   s3:
