@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   sharefile:
   - apiVersion: v2
+    appVersion: 0.0.6
+    created: "2025-08-05T19:25:24.676028307Z"
+    description: A Helm chart for Kubernetes
+    digest: 9f7f7f6b5aefcfb31797a5d1a976602d8bf235d03b8b74c68623b4b90c76e252
+    name: sharefile
+    type: application
+    urls:
+    - https://github.com/paragor/sharefile/releases/download/sharefile-0.0.6-helm/sharefile-0.0.6.tgz
+    version: 0.0.6
+  - apiVersion: v2
     appVersion: 0.0.5
     created: "2025-07-22T04:55:42.585430651Z"
     description: A Helm chart for Kubernetes
@@ -51,4 +61,4 @@ entries:
     urls:
     - https://github.com/paragor/sharefile/releases/download/sharefile-0.0.1-helm/sharefile-0.0.1.tgz
     version: 0.0.1
-generated: "2025-07-22T04:55:42.58545168Z"
+generated: "2025-08-05T19:25:24.676059184Z"
