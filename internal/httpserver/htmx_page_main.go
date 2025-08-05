@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"math"
@@ -100,34 +99,6 @@ func (s *httpServer) htmxPageLogin(w http.ResponseWriter, r *http.Request) {
 	renderContext.ChildComponent = template.HTML(oidcHtmx.String())
 
 	writeHtmx(w, r, "page/index", renderContext, http.StatusUnauthorized)
-}
-
-func (s *httpServer) htmxPageWhoami(w http.ResponseWriter, r *http.Request) {
-	auth, err := s.extractAuthContext(r)
-	if err != nil {
-		httpError(r.Context(), w, "error on getting auth context", err, http.StatusInternalServerError)
-		return
-	}
-
-	token, err := json.MarshalIndent(auth.RawToken, "", "  ")
-	if err != nil {
-		httpError(r.Context(), w, "error on marshal token", err, http.StatusInternalServerError)
-		return
-	}
-
-	renderContext := s.htmxPrepareMainContext(r)
-	renderContext.ChildComponent = template.HTML(fmt.Sprintf(`
-<div class='row'>
-	<pre class="col-12">
-Expiration: %s
-	</pre>
-	<pre class="col-12">
-%s
-	</pre>
-</div>
-`, auth.ExpireAt.Sub(time.Now()), string(token)))
-
-	writeHtmx(w, r, "page/index", renderContext, http.StatusOK)
 }
 
 func (s *httpServer) htmxComponentListFiles(ctx context.Context, userScopedStorage storage.UserScopedStorage) (template.HTML, error) {
